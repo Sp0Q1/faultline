@@ -1,0 +1,46 @@
+# Faultline — Production multi-stage build
+#
+# Build:  podman build -f Containerfile.prod -t faultline:latest .
+# Run:    podman run --env-file .env.prod -p 5150:5150 -v ./data:/app/data faultline:latest
+
+# -- Stage 1: Plan dependencies --
+FROM rust:latest AS chef
+RUN cargo install cargo-chef
+RUN apt-get update && apt-get install -y libsqlite3-dev && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+
+FROM chef AS planner
+COPY . .
+RUN cargo chef prepare --recipe-path recipe.json
+
+# -- Stage 2: Build release binary --
+FROM chef AS builder
+COPY --from=planner /app/recipe.json recipe.json
+RUN cargo chef cook --release --recipe-path recipe.json
+COPY . .
+RUN cargo build --release
+
+# -- Stage 3: Minimal runtime image --
+FROM debian:bookworm-slim AS runtime
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libsqlite3-0 ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN useradd --create-home --shell /bin/bash appuser
+WORKDIR /app
+
+COPY --from=builder /app/target/release/faultline-cli ./faultline-cli
+
+COPY config/ ./config/
+COPY assets/ ./assets/
+
+RUN mkdir -p /app/data && chown appuser:appuser /app/data
+VOLUME /app/data
+
+USER appuser
+EXPOSE 5150
+
+ENV LOCO_ENV=production
+ENV DATABASE_URL=sqlite:///app/data/faultline.sqlite?mode=rwc
+
+CMD ["./faultline-cli", "start"]

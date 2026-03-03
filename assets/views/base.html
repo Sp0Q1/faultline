@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Faultline — Hack the system. Build your syndicate. Own the network.">
+  <title>{% block title %}{% endblock title %}</title>
+  <link rel="stylesheet" href="/static/oat.min.css" integrity="sha384-Q7tDn81qF6GoBv+Rdj5l6JFr2qaiXG01Z5dT8jRpp5lE+6IZx8as9X/Igi7ISdBP" crossorigin="anonymous">
+  <link rel="stylesheet" href="/static/cybercore.min.css">
+  <link rel="stylesheet" href="/static/app.css?v=8">
+  {% block head %}
+
+  {% endblock head %}
+</head>
+
+<body{% if user_name %} data-authenticated{% endif %}>
+    <nav data-topnav>
+        <span>
+            <a href="/" class="brand">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#00ff41" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="4 17 10 11 4 5"/>
+                    <line x1="12" y1="19" x2="20" y2="19"/>
+                </svg>
+                <strong class="gradient-text">FAULTLINE</strong>
+            </a>
+        </span>
+        {% if user_name %}
+        <ot-dropdown class="org-switcher-nav">
+            <button class="org-badge" popovertarget="org-switcher" aria-label="Switch syndicate">
+                {{ org_name | default(value="No Syndicate") | truncate(length=20, end="...") }}
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div id="org-switcher" popover>
+                {% if user_orgs %}
+                {% for org in user_orgs %}
+                <a href="/orgs/switch/{{ org.pid }}" role="menuitem"{% if org.pid == org_pid %} class="active"{% endif %}>
+                    {{ org.name }}{% if org.is_personal %} <small>(Solo)</small>{% endif %}
+                </a>
+                {% endfor %}
+                <hr>
+                {% endif %}
+                <a href="/orgs/new" role="menuitem">Form Syndicate</a>
+                <a href="/orgs" role="menuitem">Manage Syndicates</a>
+            </div>
+        </ot-dropdown>
+        {% endif %}
+        <span><a href="/orgs">Syndicates</a></span>
+        <ot-dropdown class="nav-end">
+            {% if user_name %}
+            <button class="icon ghost" popovertarget="account-menu" aria-label="Account menu">
+                <span class="user-avatar">{{ user_name | truncate(length=1, end="") | upper }}</span>
+            </button>
+            {% else %}
+            <button class="icon ghost" popovertarget="account-menu" aria-label="Account menu">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="8" r="4"/>
+                    <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>
+                </svg>
+            </button>
+            {% endif %}
+            <div id="account-menu" popover>
+                {% if user_name %}
+                <span role="menuitem">{{ user_name }}</span>
+                <hr>
+                <a href="/orgs" role="menuitem">Syndicates</a>
+                <a href="/api/auth/oidc/logout" role="menuitem">Disconnect</a>
+                {% else %}
+                <a href="/api/auth/oidc/authorize" role="menuitem">Jack In</a>
+                <a href="/api/auth/oidc/authorize" role="menuitem">Create Identity</a>
+                {% endif %}
+            </div>
+        </ot-dropdown>
+    </nav>
+    <main class="container">
+        {% block page_title_block %}
+        {% endblock page_title_block %}
+        {% block content %}
+        {% endblock content %}
+    </main>
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <strong class="gradient-text">FAULTLINE</strong>
+                <p>A fracture in the system. Exploit it.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Navigation</h4>
+                <ul>
+                    <li><a href="/">Terminal</a></li>
+                    <li><a href="/orgs">Syndicates</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>System</h4>
+                <ul>
+                    <li>Rust + Loco</li>
+                    <li>OIDC SSO</li>
+                    <li>SQLite</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span class="cursor-blink">_</span> FAULTLINE v0.1.0 // Built on fracture-core
+        </div>
+    </footer>
+  <script src="/static/oat.min.js" integrity="sha384-/Trl5iuXWQS6d7T9TWGsfbC7cIDm88CDZc+BdI3LCdclFglQVOz7AmU+M7R5IQE/" crossorigin="anonymous"></script>
+  <script src="/static/app.js?v=8"></script>
+  {% block js %}
+
+  {% endblock js %}
+</body>
+
+</html>
