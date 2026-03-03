@@ -113,4 +113,4 @@ Copy `.env.example` to `.env` and fill in the values, or use `dev/setup.sh` whic
 
 ## License
 
-Private — not licensed for redistribution.
+[AGPL-3.0](LICENSE)
